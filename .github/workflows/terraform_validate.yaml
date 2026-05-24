@@ -1,0 +1,69 @@
+name: IaC Validation & Security Scan
+
+on:
+    push:
+        branches:
+            - '**'
+        tags:
+            - '**'
+        paths:
+            - 'terraform/**'
+    
+    pull_request:
+        branches:
+            - '**'
+        types:
+            - opened
+            - synchronize
+            - reopened
+        paths:
+            - 'terraform/**'
+
+jobs:
+    terraform-lint:
+        name: "Terraform Lint and Validate"
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+            
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v4
+              with:
+                terraform_version: "1.5.0"
+            
+            - name: Check FMT
+              working-directory: ./terraform
+              run: terraform fmt -check -recursive
+
+            - name: Terraform init
+              working-directory: ./terraform
+              run: terraform init -backend=false
+
+            - name: Terraform Validate
+              run: |
+                cd ./terraform
+                terraform validate
+            
+    kics-scan:
+        name: "KICS Security Scan"
+        runs-on: ubuntu-22.04
+        needs:
+            - terraform-lint
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+            
+            - name: Run KICS Scan
+              uses: checkmarx/kics-github-action@v2.1.20
+              with:
+                path: terraform/
+                fail_on: 'critical'
+                ignore_on_exit: "none"
+                output_path: results/
+            
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: kics-results
+                path: results/

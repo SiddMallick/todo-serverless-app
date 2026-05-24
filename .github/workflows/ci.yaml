@@ -12,13 +12,13 @@ on:
             - 'feature/**'
             - 'ci/**'
         paths:
-            - 'frontend/**'
+            - 'frontend/src/**'
     
     pull_request:
         branches:
             - master
         paths:
-            - 'frontend/**'
+            - 'frontend/src/**'
 
 jobs:
 
@@ -86,5 +86,5 @@ jobs:
             - name: "Invalidate Cloudfront Cache"
               run: |
                 aws cloudfront create-invalidation \
-                    --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_DEV }}
+                    --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_DEV }} \
                     --paths "/*"
