@@ -4,7 +4,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 ddb = boto3.resource('dynamodb')
-todo_table = ddb.Table('todo-table-dev')
+todo_table = ddb.Table('todo-dev')
 
 def lambda_handler(event, context):
 
