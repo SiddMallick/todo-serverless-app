@@ -2,7 +2,7 @@ import json
 import boto3
 
 ddb = boto3.resource('dynamodb')
-todo_table = ddb.Table('todo-table-dev')
+todo_table = ddb.Table('todo-dev')
 
 def lambda_handler(event, context):
 
