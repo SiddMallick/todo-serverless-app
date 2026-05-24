@@ -10,6 +10,7 @@ export async function getTodos() {
   return response.json()
 }
 
+
 export async function createTodo(todo) {
   const response = await fetch(`${API_BASE_URL}/todos`, {
     method: 'POST',
