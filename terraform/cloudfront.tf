@@ -1,5 +1,5 @@
 resource "aws_cloudfront_origin_access_control" "todo_app_dev_oac" {
-  
+
   name = "todo-ui-oac"
 
   origin_access_control_origin_type = "s3"
@@ -11,13 +11,13 @@ resource "aws_cloudfront_origin_access_control" "todo_app_dev_oac" {
 
 provider "aws" {
   region = "us-east-1"
-  alias = "us-east-1"
+  alias  = "us-east-1"
 }
 
 resource "aws_acm_certificate" "todo_cert" {
   provider = aws.us-east-1
 
-  domain_name = "*.treeoftools.click"
+  domain_name       = "*.treeoftools.click"
   validation_method = "DNS"
 
 }
@@ -28,24 +28,24 @@ data "aws_route53_zone" "main" {
 
 
 resource "aws_route53_record" "todo_cert_validation" {
-    
-    for_each = {
-      for dvo in aws_acm_certificate.todo_cert.domain_validation_options :
-      dvo.domain_name => {
-        name = dvo.resource_record_name
-        record = dvo.resource_record_value
-        type = dvo.resource_record_type
-      }
+
+  for_each = {
+    for dvo in aws_acm_certificate.todo_cert.domain_validation_options :
+    dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
     }
+  }
 
-    zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = data.aws_route53_zone.main.zone_id
 
-    name = each.value.name
-    type = each.value.type
-    records = [each.value.record]
+  name    = each.value.name
+  type    = each.value.type
+  records = [each.value.record]
 
-    ttl = 60
-  
+  ttl = 60
+
 }
 
 resource "aws_acm_certificate_validation" "todo_cert" {
@@ -55,7 +55,7 @@ resource "aws_acm_certificate_validation" "todo_cert" {
 
   validation_record_fqdns = [
     for record in aws_route53_record.todo_cert_validation :
-        record.fqdn
+    record.fqdn
   ]
 }
 
@@ -71,14 +71,14 @@ resource "aws_cloudfront_distribution" "todo_frontend_distribution" {
   ]
 
   origin {
-    domain_name = aws_s3_bucket.todo_frontend_bucket.bucket_regional_domain_name
-    origin_id = "todoFrontendS3"
+    domain_name              = aws_s3_bucket.todo_frontend_bucket.bucket_regional_domain_name
+    origin_id                = "todoFrontendS3"
     origin_access_control_id = aws_cloudfront_origin_access_control.todo_app_dev_oac.id
   }
 
   default_cache_behavior {
-    allowed_methods = ["GET","HEAD", "OPTIONS"]
-    cached_methods = ["GET","HEAD"]
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    cached_methods  = ["GET", "HEAD"]
 
     target_origin_id = "todoFrontendS3"
 
@@ -110,14 +110,14 @@ resource "aws_cloudfront_distribution" "todo_frontend_distribution" {
   }
 
   custom_error_response {
-    error_code = 403
-    response_code = 200
+    error_code         = 403
+    response_code      = 200
     response_page_path = "/index.html"
   }
 
   custom_error_response {
-    error_code = 404
-    response_code = 200
+    error_code         = 404
+    response_code      = 200
     response_page_path = "/index.html"
   }
 
