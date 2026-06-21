@@ -5,3 +5,4 @@ variable "artifact_bucket" {
 variable "lambda_s3_keys" {
   type = map(string)
 }
+
