@@ -1,0 +1,55 @@
+name: Deploy Lambda Dev
+
+on:
+    push:
+        branches:
+            - master
+            - ci/add_ci
+        paths:
+          - 'lambdas/**'
+    
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    AWS_REGION: ap-south-1
+    ARTIFACT_BUCKET: todo-lambda-artifacts-bucket
+
+jobs:
+
+    detect_microservice_changes:
+
+        runs-on: ubuntu-latest
+
+        outputs:
+            matrix: ${{ steps.changed.outputs.matrix }}
+
+        steps:
+            
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                fetch-depth: 0
+            
+            - id: detect-change
+              name: Detect Change in Lambda Microservices
+              shell: bash
+              run: |
+                
+                CHANGED=$(git diff --name-only \
+                    ${{ github.event.before }} \
+                    ${{ github.sha }} \
+                    | grep '^lambdas/' | cut -d'/' -f2 | sort -u)
+                
+                if [ -z "CHANGED" ]; then
+                    echo 'matrix=[]' >> $GITHUB_OUTPUT
+                    echo 'No Changes deployed'
+                    exit 0
+                fi
+
+                JSON=$(printf '%s\n' $CHANGED | jq -R . | jq -s -c .)
+
+                echo "matrix=$JSON" >> GITHUB_OUTPUT
+
+                echo "$JSON"
