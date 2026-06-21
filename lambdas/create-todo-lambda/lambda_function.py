@@ -21,6 +21,8 @@ def lambda_handler(events, context):
         'created_at': datetime.utcnow().isoformat()
     }
 
+    print(f"For Change {item}")
+
     todo_table.put_item(Item = item)
 
     return {
