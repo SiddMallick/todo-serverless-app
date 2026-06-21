@@ -91,7 +91,7 @@ jobs:
 
                 if [ -f lambdas/$LAMBDA/requirements.txt ]; then
                     pip install \
-                        -r lambdas/$LAMBDA/requirement.txt
+                        -r lambdas/$LAMBDA/requirements.txt
                         -t package
                 fi
 
