@@ -82,7 +82,7 @@ resource "aws_cloudfront_distribution" "todo_frontend_distribution" {
 
     target_origin_id = "todoFrontendS3"
 
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "redirect-to-https" #Redirect to HTTPS
 
     compress = true
 
@@ -103,9 +103,7 @@ resource "aws_cloudfront_distribution" "todo_frontend_distribution" {
 
   viewer_certificate {
     acm_certificate_arn = aws_acm_certificate_validation.todo_cert.certificate_arn
-
-    ssl_support_method = "sni-only"
-
+    ssl_support_method = "sni-only" #To enable server name indication during TLS termination
     minimum_protocol_version = "TLSv1.2_2021"
   }
 

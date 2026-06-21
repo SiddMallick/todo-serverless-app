@@ -47,21 +47,26 @@ resource "aws_api_gateway_integration" "create_todo_lambda" {
 
   type = "AWS_PROXY"
 
-  uri = aws_lambda_function.create_todo_lambda_dev.invoke_arn
+  uri = aws_lambda_alias.dev["create_todo"].invoke_arn
 
 }
 
 resource "aws_lambda_permission" "allow_apigw_create_todo" {
 
-  statement_id = "AllowExecutionFromAPIGatewayCreateTodo"
+  statement_id = "AllowExecutionFromAPIGWCreateTodoDev"
 
   action = "lambda:InvokeFunction"
 
-  function_name = aws_lambda_function.create_todo_lambda_dev.function_name
+  function_name = aws_lambda_alias.dev["create_todo"].function_name
 
   principal = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.todo_api_dev.execution_arn}/*/*"
+
+  qualifier = aws_lambda_alias.dev["create_todo"].name
+
+
+
 }
 
 resource "aws_api_gateway_method" "get_todos_lambda" {
@@ -82,21 +87,26 @@ resource "aws_api_gateway_integration" "get_todos_lambda" {
 
   type = "AWS_PROXY"
 
-  uri = aws_lambda_function.get_todo_lambda_dev.invoke_arn
+  uri = aws_lambda_alias.dev["get_todos"].invoke_arn
+  
 
 }
 
 resource "aws_lambda_permission" "allow_apigw_get_todo" {
 
-  statement_id = "AllowExecutionFromAPIGatewayGetTodo"
+  statement_id = "AllowExecutionFromAPIGWGetTodoDev"
 
   action = "lambda:InvokeFunction"
 
-  function_name = aws_lambda_function.get_todo_lambda_dev.function_name
+  function_name = aws_lambda_alias.dev["get_todos"].function_name
 
   principal = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.todo_api_dev.execution_arn}/*/*"
+
+  qualifier = aws_lambda_alias.dev["create_todo"].name
+
+
 }
 
 
@@ -121,21 +131,26 @@ resource "aws_api_gateway_integration" "get_todo_by_id" {
   integration_http_method = "POST"
 
   type = "AWS_PROXY"
-  uri  = aws_lambda_function.get_todo_by_id_lambda_dev.invoke_arn
+  uri  = aws_lambda_alias.dev["get_todo_by_id"].invoke_arn
 
 }
 
 resource "aws_lambda_permission" "allow_apigw_get_todo_id" {
 
-  statement_id = "AllowExecutionFromAPIGatewayGetTodoID"
+  statement_id = "AllowExecutionFromAPIGWGetTodoIDDev"
 
   action = "lambda:InvokeFunction"
 
-  function_name = aws_lambda_function.get_todo_by_id_lambda_dev.function_name
+  function_name = aws_lambda_alias.dev["get_todo_by_id"].function_name
 
   principal = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.todo_api_dev.execution_arn}/*/*"
+
+  qualifier = aws_lambda_alias.dev["create_todo"].name
+
+
+
 }
 
 
@@ -161,21 +176,25 @@ resource "aws_api_gateway_integration" "delete_todo_by_id" {
   integration_http_method = "POST"
 
   type = "AWS_PROXY"
-  uri  = aws_lambda_function.delete_todo_lambda_dev.invoke_arn
+  uri  = aws_lambda_alias.dev["delete_todo"].invoke_arn
 
 }
 
 resource "aws_lambda_permission" "allow_apigw_delete_todo_id" {
 
-  statement_id = "AllowExecutionFromAPIGatewayDeleteTodoId"
+  statement_id = "AllowExecutionFromAPIGWDeleteTodoIdDev"
 
   action = "lambda:InvokeFunction"
 
-  function_name = aws_lambda_function.delete_todo_lambda_dev.function_name
+  function_name = aws_lambda_alias.dev["delete_todo"].function_name
 
   principal = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.todo_api_dev.execution_arn}/*/*"
+
+  qualifier = aws_lambda_alias.dev["create_todo"].name
+
+
 }
 
 
@@ -193,21 +212,26 @@ resource "aws_api_gateway_deployment" "todo_api_dev_deployment" {
     create_before_destroy = true
   }
 
-  triggers = {
-    redeployment = sha1(jsonencode([
-      aws_api_gateway_rest_api.todo_api_dev.id,
+  # triggers = {
+  #   redeployment = sha1(jsonencode([
+  #     aws_api_gateway_rest_api.todo_api_dev.id,
 
-      aws_api_gateway_method.create_todo_post.id,
-      aws_api_gateway_method.get_todos_lambda.id,
-      aws_api_gateway_method.get_todo_by_id.id,
-      aws_api_gateway_method.delete_todo_by_id.id,
+  #     aws_api_gateway_method.create_todo_post.id,
+  #     aws_api_gateway_method.get_todos_lambda.id,
+  #     aws_api_gateway_method.get_todo_by_id.id,
+  #     aws_api_gateway_method.delete_todo_by_id.id,
 
-      aws_api_gateway_integration.create_todo_lambda.id,
-      aws_api_gateway_integration.get_todos_lambda.id,
-      aws_api_gateway_integration.get_todo_by_id.id,
-      aws_api_gateway_integration.delete_todo_by_id.id
-    ]))
-  }
+  #     # aws_lambda_permission.allow_apigw_create_todo,
+  #     # aws_lambda_permission.allow_apigw_delete_todo_id,
+  #     # aws_lambda_permission.allow_apigw_get_todo,
+  #     # aws_lambda_permission.allow_apigw_get_todo_id,
+
+  #     aws_api_gateway_integration.create_todo_lambda.id,
+  #     aws_api_gateway_integration.get_todos_lambda.id,
+  #     aws_api_gateway_integration.get_todo_by_id.id,
+  #     aws_api_gateway_integration.delete_todo_by_id.id
+  #   ]))
+  # }
 
 }
 
