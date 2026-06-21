@@ -7,6 +7,7 @@ ddb = boto3.resource('dynamodb')
 todo_table = ddb.Table('todo-dev')
 
 def lambda_handler(events, context):
+    print("Version:", context.function_version)
 
     body = json.loads(events['body'])
 
