@@ -122,7 +122,7 @@ jobs:
 
                 aws lambda update-function-code \
                     --function-name $LAMBDA \
-                    --s3-bucket ${{ env.ARTIFACT_BUCKET }}
+                    --s3-bucket ${{ env.ARTIFACT_BUCKET }} \
                     --s3-key $LAMBDA/$SHA.zip
                 
             - name: Wait for update
