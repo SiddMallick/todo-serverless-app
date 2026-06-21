@@ -3,7 +3,7 @@ name: Deploy Lambda Dev
 on:
     push:
         branches:
-            - ci/add_ci
+            - master
         paths:
           - 'lambdas/**'
     

@@ -212,26 +212,26 @@ resource "aws_api_gateway_deployment" "todo_api_dev_deployment" {
     create_before_destroy = true
   }
 
-  # triggers = {
-  #   redeployment = sha1(jsonencode([
-  #     aws_api_gateway_rest_api.todo_api_dev.id,
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_rest_api.todo_api_dev.id,
 
-  #     aws_api_gateway_method.create_todo_post.id,
-  #     aws_api_gateway_method.get_todos_lambda.id,
-  #     aws_api_gateway_method.get_todo_by_id.id,
-  #     aws_api_gateway_method.delete_todo_by_id.id,
+      aws_api_gateway_method.create_todo_post.id,
+      aws_api_gateway_method.get_todos_lambda.id,
+      aws_api_gateway_method.get_todo_by_id.id,
+      aws_api_gateway_method.delete_todo_by_id.id,
 
-  #     # aws_lambda_permission.allow_apigw_create_todo,
-  #     # aws_lambda_permission.allow_apigw_delete_todo_id,
-  #     # aws_lambda_permission.allow_apigw_get_todo,
-  #     # aws_lambda_permission.allow_apigw_get_todo_id,
+      # aws_lambda_permission.allow_apigw_create_todo,
+      # aws_lambda_permission.allow_apigw_delete_todo_id,
+      # aws_lambda_permission.allow_apigw_get_todo,
+      # aws_lambda_permission.allow_apigw_get_todo_id,
 
-  #     aws_api_gateway_integration.create_todo_lambda.id,
-  #     aws_api_gateway_integration.get_todos_lambda.id,
-  #     aws_api_gateway_integration.get_todo_by_id.id,
-  #     aws_api_gateway_integration.delete_todo_by_id.id
-  #   ]))
-  # }
+      aws_api_gateway_integration.create_todo_lambda.id,
+      aws_api_gateway_integration.get_todos_lambda.id,
+      aws_api_gateway_integration.get_todo_by_id.id,
+      aws_api_gateway_integration.delete_todo_by_id.id
+    ]))
+  }
 
 }
 
