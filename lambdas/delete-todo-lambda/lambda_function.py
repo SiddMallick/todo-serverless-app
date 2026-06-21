@@ -7,7 +7,7 @@ ddb = boto3.resource('dynamodb')
 todo_table = ddb.Table('todo-dev')
 
 def lambda_handler(event, context):
-
+    print("Version:", context.function_version)
     user_id = 'USER#demo-user'
 
     todo_id = event['pathParameters']['todo_id']
