@@ -3,7 +3,6 @@ name: Deploy Lambda Dev
 on:
     push:
         branches:
-            - master
             - ci/add_ci
         paths:
           - 'lambdas/**'
@@ -23,7 +22,7 @@ jobs:
         runs-on: ubuntu-latest
 
         outputs:
-            matrix: ${{ steps.changed.outputs.matrix }}
+            matrix: ${{ steps.detect-change.outputs.matrix }}
 
         steps:
             
@@ -50,6 +49,113 @@ jobs:
 
                 JSON=$(printf '%s\n' $CHANGED | jq -R . | jq -s -c .)
 
-                echo "matrix=$JSON" >> GITHUB_OUTPUT
+                echo "matrix=$JSON" >> $GITHUB_OUTPUT
 
                 echo "$JSON"
+
+    deploy:
+
+        needs: detect_microservice_changes
+
+        if: needs.detect_microservice_changes.outputs.matrix != '[]'
+        
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                lambda: ${{ fromJson(needs.detect_microservice_changes.outputs.matrix) }} # Lambda is the matrix key and [ Lambda functions ] are the function names returned in the matrix
+
+        steps:
+            
+            - uses: actions/checkout@v6
+            
+            - name: Setup Python
+              uses: actions/setup-python@v6
+              with:
+                python-version: '3.14'
+            
+            - name: Configure AWS
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: arn:aws:iam::${{ secrets.AWS_ACC_ID }}:role/github-actions-role
+                aws-region: ${{ env.AWS_REGION }}
+              
+            - name: Build zip # Since we are using matrix, GITHUB ACTIONS will split this step for all the lambdas that were changed. We just write the bash script for one single lambda and the same will be applied to all. 
+              shell: bash
+              run: |
+                
+                LAMBDA=${{ matrix.lambda }}
+
+                mkdir package
+
+                if [ -f lambdas/$LAMBDA/requirements.txt ]; then
+                    pip install \
+                        -r lambdas/$LAMBDA/requirement.txt
+                        -t package
+                fi
+
+                cp -r lambdas/$LAMBDA/* package/
+
+                cd package
+
+                zip -r ../$LAMBDA.zip .
+                cd ..
+           
+            - name: Upload Zip to S3
+              shell: bash
+              run: |
+                
+                LAMBDA=${{ matrix.lambda }}
+                SHA=${GITHUB_SHA::8}
+
+                aws s3 cp \
+                    $LAMBDA.zip \
+                    s3://${{ env.ARTIFACT_BUCKET }}/$LAMBDA/$SHA.zip
+
+            - name: Update Function code
+              shell: bash
+              run: |
+                
+                LAMBDA=${{ matrix.lambda }}
+                SHA=${GITHUB_SHA::8}
+
+                aws lambda update-function-code \
+                    --function-name $LAMBDA \
+                    --s3-bucket ${{ env.ARTIFACT_BUCKET }}
+                    --s3-key $LAMBDA/$SHA.zip
+                
+            - name: Wait for update
+              shell: bash
+              run: |
+                
+                aws lambda wait function-updated --function-name ${{ matrix.lambda }}
+            
+            - name: Publish Version
+              id: publish
+              shell: bash
+              run: |
+                
+                VERSION=$(aws lambda publish-version \
+                    --function-name ${{ matrix.lambda }} \
+                    --query Version \
+                    --output text)
+                
+                echo "version=$VERSION" >> $GITHUB_OUTPUT
+            
+            - name: Update dev alias
+              shell: bash
+              run: |
+                
+                aws lambda update-alias \
+                    --function-name ${{ matrix.lambda }}
+                    --name dev \
+                    --function-version ${{ steps.publish.outputs.version }}
+
+            - name: Print deployment summary
+              shell: bash
+              run: |
+                
+                echo "Lambda: ${{ matrix.lambda }}"
+                echo "Version: ${{ steps.publish.outputs.version }}"
+                echo "Alias: dev"

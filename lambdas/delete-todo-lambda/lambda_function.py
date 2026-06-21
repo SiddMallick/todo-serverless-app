@@ -20,6 +20,8 @@ def lambda_handler(event, context):
             },
             ConditionExpression = 'attribute_exists(todo_id)'
         )
+        
+        print(response)
 
         return {
             'statusCode': 200,
