@@ -88,7 +88,7 @@ resource "aws_api_gateway_integration" "get_todos_lambda" {
   type = "AWS_PROXY"
 
   uri = aws_lambda_alias.dev["get_todos"].invoke_arn
-  
+
 
 }
 
