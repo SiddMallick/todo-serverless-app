@@ -148,7 +148,7 @@ jobs:
               run: |
                 
                 aws lambda update-alias \
-                    --function-name ${{ matrix.lambda }}
+                    --function-name ${{ matrix.lambda }} \
                     --name dev \
                     --function-version ${{ steps.publish.outputs.version }}
 

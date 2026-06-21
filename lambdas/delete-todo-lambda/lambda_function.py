@@ -22,7 +22,7 @@ def lambda_handler(event, context):
         )
         
         print(response)
-        print("Deleted todo item on condition expression attribute_exists(todo_id)")
+        print("Deleted todo item on condition expression attribute_exists(todo_id)!!!")
 
         return {
             'statusCode': 200,
